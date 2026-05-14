@@ -158,4 +158,92 @@
   .delay-500 {
     animation-delay: 0.5s;
   }
+
+  @keyframes stripe-move {
+    0% {
+      transform: translateX(-160%) rotate(-18deg);
+    }
+    100% {
+      transform: translateX(160vw) rotate(-18deg);
+    }
+  }
+
+  @keyframes splash-text-in {
+    0% {
+      opacity: 0;
+      transform: translateY(48px) scale(0.94);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes splash-out {
+    0% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1.05);
+    }
+  }
+
+  @keyframes pulse-glow {
+    0%,
+    100% {
+      opacity: 0.12;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.32;
+      transform: scale(1.1);
+    }
+  }
+
+  @keyframes btn-breathe {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(29, 185, 84, 0.5);
+    }
+    50% {
+      box-shadow: 0 0 0 18px rgba(29, 185, 84, 0);
+    }
+  }
+
+  @keyframes float-note {
+    0%,
+    100% {
+      transform: translateY(0px) rotate(-5deg);
+    }
+    50% {
+      transform: translateY(-12px) rotate(5deg);
+    }
+  }
+
+  .stripe-anim {
+    animation: stripe-move linear infinite;
+  }
+
+  .splash-text-in {
+    animation: splash-text-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    opacity: 0;
+  }
+
+  .splash-exit {
+    animation: splash-out 0.8s cubic-bezier(0.4, 0, 1, 1) forwards;
+  }
+
+  .pulse-glow {
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+
+  .btn-breathe {
+    animation: btn-breathe 2.2s ease-in-out infinite;
+  }
+
+  .float-note {
+    animation: float-note 4s ease-in-out infinite;
+  }
 }

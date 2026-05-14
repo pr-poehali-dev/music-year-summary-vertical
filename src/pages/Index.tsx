@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 
 const TRACKS = [
@@ -95,7 +95,223 @@ const TOP_GENRES = [
   { name: "Electronic", pct: 13, color: "#e63946" },
 ];
 
+const STRIPES = [
+  { color: "#1db954", width: 80, top: "8%", dur: "5s", delay: "0s" },
+  { color: "#e63946", width: 48, top: "22%", dur: "7.5s", delay: "1.4s" },
+  { color: "#457b9d", width: 120, top: "38%", dur: "6s", delay: "0.6s" },
+  { color: "#f4a261", width: 36, top: "55%", dur: "8s", delay: "2.5s" },
+  { color: "#9b2226", width: 64, top: "68%", dur: "5.5s", delay: "3.8s" },
+  { color: "#2a9d8f", width: 90, top: "80%", dur: "9s", delay: "1s" },
+  { color: "#7209b7", width: 52, top: "90%", dur: "6.5s", delay: "4.2s" },
+];
+
+function SplashScreen({
+  onEnter,
+  exiting,
+  audioRef,
+}: {
+  onEnter: () => void;
+  exiting: boolean;
+  audioRef: React.RefObject<HTMLIFrameElement>;
+}) {
+  return (
+    <div
+      className={exiting ? "splash-exit" : ""}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "#0a0a0a",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        overflow: "hidden",
+        fontFamily: "'Golos Text', sans-serif",
+        zIndex: 100,
+      }}
+    >
+      {/* Animated colour stripes */}
+      {STRIPES.map((s, i) => (
+        <div
+          key={i}
+          className="stripe-anim"
+          style={{
+            position: "absolute",
+            top: s.top,
+            left: 0,
+            width: `${s.width}px`,
+            height: "200vh",
+            background: s.color,
+            opacity: 0.55,
+            animationDuration: s.dur,
+            animationDelay: s.delay,
+            borderRadius: "4px",
+            filter: "blur(1px)",
+          }}
+        />
+      ))}
+
+      {/* Glow orbs */}
+      <div
+        className="pulse-glow"
+        style={{
+          position: "absolute",
+          top: "20%",
+          left: "15%",
+          width: "400px",
+          height: "400px",
+          borderRadius: "50%",
+          background: "radial-gradient(circle, #1db954 0%, transparent 70%)",
+          filter: "blur(60px)",
+        }}
+      />
+      <div
+        className="pulse-glow"
+        style={{
+          position: "absolute",
+          bottom: "15%",
+          right: "10%",
+          width: "320px",
+          height: "320px",
+          borderRadius: "50%",
+          background: "radial-gradient(circle, #e63946 0%, transparent 70%)",
+          filter: "blur(60px)",
+          animationDelay: "1.5s",
+        }}
+      />
+
+      {/* Hidden YouTube audio */}
+      <iframe
+        ref={audioRef}
+        src="https://www.youtube.com/embed/aZURasvm4SM?autoplay=1&loop=1&playlist=aZURasvm4SM&controls=0&modestbranding=1&rel=0"
+        allow="autoplay"
+        style={{ position: "absolute", width: 0, height: 0, opacity: 0, pointerEvents: "none" }}
+        title="bg-music"
+      />
+
+      {/* Content */}
+      <div style={{ position: "relative", zIndex: 10, textAlign: "center", padding: "0 24px", maxWidth: "600px" }}>
+        {/* Floating music note */}
+        <div
+          className="float-note"
+          style={{ fontSize: "48px", marginBottom: "32px", display: "inline-block" }}
+        >
+          🎵
+        </div>
+
+        {/* Eyebrow */}
+        <p
+          className="splash-text-in"
+          style={{
+            color: "#1db954",
+            fontSize: "12px",
+            fontWeight: 600,
+            letterSpacing: "4px",
+            textTransform: "uppercase",
+            marginBottom: "20px",
+            animationDelay: "0.1s",
+          }}
+        >
+          Музыкальные итоги · 2025
+        </p>
+
+        {/* Main headline */}
+        <h1
+          className="splash-text-in"
+          style={{
+            fontSize: "clamp(28px, 6vw, 54px)",
+            fontWeight: 800,
+            color: "#ffffff",
+            lineHeight: 1.15,
+            marginBottom: "24px",
+            animationDelay: "0.25s",
+          }}
+        >
+          Не просто музыкальные итоги,
+          <br />
+          <span style={{ color: "#1db954" }}>а приглашение отметить</span>
+          <br />
+          <span
+            style={{
+              background: "linear-gradient(90deg, #1db954, #f4a261, #e63946, #457b9d)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
+          >
+            мои 30 🎂
+          </span>
+        </h1>
+
+        {/* Subtext */}
+        <p
+          className="splash-text-in"
+          style={{
+            fontSize: "18px",
+            color: "rgba(255,255,255,0.55)",
+            marginBottom: "48px",
+            animationDelay: "0.4s",
+            fontWeight: 400,
+          }}
+        >
+          Привет,{" "}
+          <span style={{ color: "#fff", fontWeight: 600 }}>Гулять</span>
+          &nbsp;— это специально для тебя ✨
+        </p>
+
+        {/* CTA button */}
+        <div
+          className="splash-text-in"
+          style={{ animationDelay: "0.6s" }}
+        >
+          <button
+            onClick={onEnter}
+            className="btn-breathe"
+            style={{
+              background: "#1db954",
+              color: "#000",
+              border: "none",
+              borderRadius: "100px",
+              padding: "18px 52px",
+              fontSize: "16px",
+              fontWeight: 700,
+              cursor: "pointer",
+              letterSpacing: "0.5px",
+              transition: "transform 0.15s ease, background 0.15s ease",
+              fontFamily: "'Golos Text', sans-serif",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.transform = "scale(1.05)";
+              (e.currentTarget as HTMLButtonElement).style.background = "#1ed760";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)";
+              (e.currentTarget as HTMLButtonElement).style.background = "#1db954";
+            }}
+          >
+            Открыть итоги 🎉
+          </button>
+        </div>
+
+        {/* Small note */}
+        <p
+          className="splash-text-in"
+          style={{
+            marginTop: "24px",
+            fontSize: "11px",
+            color: "rgba(255,255,255,0.25)",
+            animationDelay: "0.8s",
+          }}
+        >
+          Madmen — Alma играет на фоне
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function Index() {
+  const [showSplash, setShowSplash] = useState(true);
+  const [splashOut, setSplashOut] = useState(false);
   const [section, setSection] = useState<"home" | "tracks" | "stats">("home");
   const [currentTrack, setCurrentTrack] = useState(TRACKS[0]);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -103,6 +319,12 @@ export default function Index() {
   const [volume, setVolume] = useState(80);
   const [liked, setLiked] = useState<number[]>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const audioRef = useRef<HTMLIFrameElement>(null);
+
+  const handleEnter = () => {
+    setSplashOut(true);
+    setTimeout(() => setShowSplash(false), 800);
+  };
 
   useEffect(() => {
     if (isPlaying) {
@@ -163,6 +385,10 @@ export default function Index() {
     { key: "tracks", label: "Топ-треки", icon: "ListMusic" },
     { key: "stats", label: "Статистика", icon: "BarChart2" },
   ] as const;
+
+  if (showSplash) {
+    return <SplashScreen onEnter={handleEnter} exiting={splashOut} audioRef={audioRef} />;
+  }
 
   return (
     <div
