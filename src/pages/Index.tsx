@@ -160,23 +160,13 @@ function SplashScreen({
         cursor: "default",
       }}
     >
-      {/* Hidden audio — пробуем несколько источников */}
+      {/* Hidden audio */}
       <audio
         ref={audioRef}
+        src="https://files.catbox.moe/ldrhts.mp3"
         preload="auto"
         loop
-        onError={() => {
-          if (!audioRef.current) return;
-          const cur = audioRef.current.src;
-          if (cur.includes("drive.google")) {
-            audioRef.current.src = "https://docs.google.com/uc?export=download&id=1utH8DHIB0RWeoPvYbF2JMu_QSNuXZPLX";
-            audioRef.current.load();
-          }
-        }}
-      >
-        <source src="https://drive.google.com/uc?export=download&id=1utH8DHIB0RWeoPvYbF2JMu_QSNuXZPLX&confirm=t" type="audio/mpeg" />
-        <source src="https://drive.usercontent.google.com/download?id=1utH8DHIB0RWeoPvYbF2JMu_QSNuXZPLX&export=download&confirm=t" type="audio/mpeg" />
-      </audio>
+      />
 
       {/* Animated colour stripes */}
       {STRIPES.map((s, i) => (
