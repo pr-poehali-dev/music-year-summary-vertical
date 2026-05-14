@@ -222,7 +222,7 @@ function SplashScreen({
             animationDelay: "0.1s",
           }}
         >
-          Музыкальные итоги · 2025
+          Музыкальные итоги · 2026
         </p>
 
         {/* Main headline */}
