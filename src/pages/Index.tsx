@@ -116,12 +116,30 @@ function SplashScreen({
 }) {
   const audioRef = useRef<HTMLAudioElement>(null);
 
+  // Запускаем как только страница загрузилась
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.currentTime = CHORUS_START;
+    audio.volume = 0.85;
+    audio.play().catch(() => {});
+  }, []);
+
   const handleClick = () => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = CHORUS_START;
-      audioRef.current.volume = 0.85;
-      audioRef.current.play().catch(() => {});
-    }
+    const audio = audioRef.current;
+    if (!audio) { onEnter(); return; }
+    // Плавно затихаем за 800мс
+    const startVol = audio.volume;
+    const step = startVol / 20;
+    const fade = setInterval(() => {
+      if (audio.volume > step) {
+        audio.volume = Math.max(0, audio.volume - step);
+      } else {
+        audio.volume = 0;
+        audio.pause();
+        clearInterval(fade);
+      }
+    }, 40);
     onEnter();
   };
 
