@@ -336,9 +336,155 @@ function SplashScreen({
   );
 }
 
+function TrackStoryScreen({ onNext }: { onNext: () => void }) {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [playing, setPlaying] = useState(false);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const tryPlay = () => {
+      audio.volume = 0.85;
+      audio.play().then(() => setPlaying(true)).catch(() => {});
+    };
+    tryPlay();
+    document.addEventListener("click", tryPlay, { once: true });
+    return () => document.removeEventListener("click", tryPlay);
+  }, []);
+
+  const handleNext = () => {
+    const audio = audioRef.current;
+    if (!audio || audio.paused) { onNext(); return; }
+    let vol = audio.volume;
+    const step = vol / 20;
+    const fade = setInterval(() => {
+      vol = Math.max(0, vol - step);
+      audio.volume = vol;
+      if (vol <= 0) { audio.pause(); clearInterval(fade); }
+    }, 40);
+    onNext();
+  };
+
+  return (
+    <div
+      onClick={() => {
+        if (!playing && audioRef.current) {
+          audioRef.current.volume = 0.85;
+          audioRef.current.play().then(() => setPlaying(true)).catch(() => {});
+        }
+      }}
+      style={{
+        position: "fixed", inset: 0, zIndex: 99,
+        background: "#0a0a0a",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontFamily: "'Golos Text', sans-serif",
+        overflow: "hidden",
+      }}
+    >
+      <audio ref={audioRef} src="https://files.catbox.moe/1sll88.mp3" preload="auto" loop />
+
+      {/* Фоновые волны */}
+      {["#1db954","#457b9d","#f4a261"].map((c, i) => (
+        <div key={i} className="pulse-glow" style={{
+          position: "absolute",
+          width: "500px", height: "500px",
+          borderRadius: "50%",
+          background: `radial-gradient(circle, ${c} 0%, transparent 70%)`,
+          filter: "blur(80px)",
+          opacity: 0.15,
+          top: i === 0 ? "-10%" : i === 1 ? "50%" : "20%",
+          left: i === 0 ? "-10%" : i === 1 ? "60%" : "30%",
+          animationDelay: `${i * 1.2}s`,
+        }} />
+      ))}
+
+      {/* Пульсирующий диск */}
+      <div style={{ position: "relative", zIndex: 10, textAlign: "center", padding: "0 32px", maxWidth: "560px" }}>
+        <div className="splash-text-in" style={{ animationDelay: "0s", marginBottom: "32px" }}>
+          <div
+            className={playing ? "animate-spin-slow" : ""}
+            style={{
+              width: "140px", height: "140px", borderRadius: "50%",
+              margin: "0 auto",
+              background: "linear-gradient(135deg, #1db954 0%, #457b9d 50%, #f4a261 100%)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: playing ? "0 0 60px rgba(29,185,84,0.4)" : "0 8px 32px rgba(0,0,0,0.5)",
+              transition: "box-shadow 0.5s ease",
+            }}
+          >
+            <div style={{
+              width: "36px", height: "36px", borderRadius: "50%",
+              background: "#0a0a0a",
+            }} />
+          </div>
+        </div>
+
+        <p className="splash-text-in" style={{
+          animationDelay: "0.15s",
+          fontSize: "11px", fontWeight: 600, letterSpacing: "4px",
+          textTransform: "uppercase", color: "#1db954", marginBottom: "14px",
+        }}>
+          Трек что связывает нас
+        </p>
+
+        <h2 className="splash-text-in" style={{
+          animationDelay: "0.25s",
+          fontSize: "clamp(22px, 5vw, 38px)", fontWeight: 800,
+          color: "#fff", lineHeight: 1.2, marginBottom: "24px",
+        }}>
+          {playing ? "🎵 Играет для тебя..." : "🔇 Коснись, чтобы включить"}
+        </h2>
+
+        <p className="splash-text-in" style={{
+          animationDelay: "0.4s",
+          fontSize: "16px", lineHeight: 1.7,
+          color: "rgba(255,255,255,0.55)", marginBottom: "48px",
+          fontWeight: 400,
+        }}>
+          Мы родились в одном месте, но встретились в другом —
+          чтобы сделать кучу воспоминаний друг с другом.
+          <br /><br />
+          <span style={{ color: "rgba(255,255,255,0.8)" }}>
+            И этот трек навсегда нас связывает Казахской вечеринкой 🇰🇿
+          </span>
+        </p>
+
+        <div className="splash-text-in" style={{ animationDelay: "0.55s" }}>
+          <button
+            onClick={(e) => { e.stopPropagation(); handleNext(); }}
+            style={{
+              background: "transparent",
+              color: "#fff",
+              border: "2px solid rgba(255,255,255,0.3)",
+              borderRadius: "100px",
+              padding: "16px 48px",
+              fontSize: "15px", fontWeight: 600,
+              cursor: "pointer",
+              letterSpacing: "0.5px",
+              fontFamily: "'Golos Text', sans-serif",
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "#1db954";
+              (e.currentTarget as HTMLButtonElement).style.color = "#1db954";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(255,255,255,0.3)";
+              (e.currentTarget as HTMLButtonElement).style.color = "#fff";
+            }}
+          >
+            Далее →
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Index() {
   const [showSplash, setShowSplash] = useState(true);
   const [splashOut, setSplashOut] = useState(false);
+  const [showStory, setShowStory] = useState(false);
   const [section, setSection] = useState<"home" | "tracks" | "stats">("home");
   const [currentTrack, setCurrentTrack] = useState(TRACKS[0]);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -349,7 +495,11 @@ export default function Index() {
 
   const handleEnter = () => {
     setSplashOut(true);
-    setTimeout(() => setShowSplash(false), 800);
+    setTimeout(() => { setShowSplash(false); setShowStory(true); }, 800);
+  };
+
+  const handleStoryNext = () => {
+    setShowStory(false);
   };
 
   useEffect(() => {
@@ -414,6 +564,10 @@ export default function Index() {
 
   if (showSplash) {
     return <SplashScreen onEnter={handleEnter} exiting={splashOut} />;
+  }
+
+  if (showStory) {
+    return <TrackStoryScreen onNext={handleStoryNext} />;
   }
 
   return (
