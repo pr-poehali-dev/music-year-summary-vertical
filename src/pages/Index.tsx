@@ -108,12 +108,29 @@ const STRIPES = [
 function SplashScreen({
   onEnter,
   exiting,
-  audioRef,
 }: {
   onEnter: () => void;
   exiting: boolean;
-  audioRef: React.RefObject<HTMLIFrameElement>;
 }) {
+  const [musicStarted, setMusicStarted] = useState(false);
+  const iframeContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleClick = () => {
+    // Inject iframe on click — браузер разрешит autoplay после жеста пользователя
+    if (iframeContainerRef.current && !musicStarted) {
+      const iframe = document.createElement("iframe");
+      iframe.src =
+        "https://www.youtube.com/embed/aZURasvm4SM?autoplay=1&loop=1&playlist=aZURasvm4SM&controls=0&mute=0&modestbranding=1&rel=0&enablejsapi=1";
+      iframe.allow = "autoplay; encrypted-media";
+      iframe.style.cssText =
+        "position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;left:-9999px;";
+      iframe.title = "bg-music";
+      iframeContainerRef.current.appendChild(iframe);
+      setMusicStarted(true);
+    }
+    onEnter();
+  };
+
   return (
     <div
       className={exiting ? "splash-exit" : ""}
@@ -129,6 +146,9 @@ function SplashScreen({
         zIndex: 100,
       }}
     >
+      {/* iframe container */}
+      <div ref={iframeContainerRef} style={{ position: "absolute" }} />
+
       {/* Animated colour stripes */}
       {STRIPES.map((s, i) => (
         <div
@@ -177,15 +197,6 @@ function SplashScreen({
           filter: "blur(60px)",
           animationDelay: "1.5s",
         }}
-      />
-
-      {/* Hidden YouTube audio */}
-      <iframe
-        ref={audioRef}
-        src="https://www.youtube.com/embed/aZURasvm4SM?autoplay=1&loop=1&playlist=aZURasvm4SM&controls=0&modestbranding=1&rel=0"
-        allow="autoplay"
-        style={{ position: "absolute", width: 0, height: 0, opacity: 0, pointerEvents: "none" }}
-        title="bg-music"
       />
 
       {/* Content */}
@@ -259,12 +270,9 @@ function SplashScreen({
         </p>
 
         {/* CTA button */}
-        <div
-          className="splash-text-in"
-          style={{ animationDelay: "0.6s" }}
-        >
+        <div className="splash-text-in" style={{ animationDelay: "0.6s" }}>
           <button
-            onClick={onEnter}
+            onClick={handleClick}
             className="btn-breathe"
             style={{
               background: "#1db954",
@@ -302,7 +310,7 @@ function SplashScreen({
             animationDelay: "0.8s",
           }}
         >
-          Madmen — Alma играет на фоне
+          Madmen — Alma · включится автоматически
         </p>
       </div>
     </div>
@@ -319,7 +327,6 @@ export default function Index() {
   const [volume, setVolume] = useState(80);
   const [liked, setLiked] = useState<number[]>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const audioRef = useRef<HTMLIFrameElement>(null);
 
   const handleEnter = () => {
     setSplashOut(true);
@@ -387,7 +394,7 @@ export default function Index() {
   ] as const;
 
   if (showSplash) {
-    return <SplashScreen onEnter={handleEnter} exiting={splashOut} audioRef={audioRef} />;
+    return <SplashScreen onEnter={handleEnter} exiting={splashOut} />;
   }
 
   return (
