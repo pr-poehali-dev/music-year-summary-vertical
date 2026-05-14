@@ -105,6 +105,8 @@ const STRIPES = [
   { color: "#7209b7", width: 52, top: "90%", dur: "6.5s", delay: "4.2s" },
 ];
 
+const CHORUS_START = 54; // секунда начала припева Scrubb — Everything
+
 function SplashScreen({
   onEnter,
   exiting,
@@ -112,21 +114,13 @@ function SplashScreen({
   onEnter: () => void;
   exiting: boolean;
 }) {
-  const [musicStarted, setMusicStarted] = useState(false);
-  const iframeContainerRef = useRef<HTMLDivElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   const handleClick = () => {
-    // Inject iframe on click — браузер разрешит autoplay после жеста пользователя
-    if (iframeContainerRef.current && !musicStarted) {
-      const iframe = document.createElement("iframe");
-      iframe.src =
-        "https://www.youtube.com/embed/aZURasvm4SM?autoplay=1&loop=1&playlist=aZURasvm4SM&controls=0&mute=0&modestbranding=1&rel=0&enablejsapi=1";
-      iframe.allow = "autoplay; encrypted-media";
-      iframe.style.cssText =
-        "position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;left:-9999px;";
-      iframe.title = "bg-music";
-      iframeContainerRef.current.appendChild(iframe);
-      setMusicStarted(true);
+    if (audioRef.current) {
+      audioRef.current.currentTime = CHORUS_START;
+      audioRef.current.volume = 0.85;
+      audioRef.current.play().catch(() => {});
     }
     onEnter();
   };
@@ -146,8 +140,13 @@ function SplashScreen({
         zIndex: 100,
       }}
     >
-      {/* iframe container */}
-      <div ref={iframeContainerRef} style={{ position: "absolute" }} />
+      {/* Hidden audio */}
+      <audio
+        ref={audioRef}
+        src="https://drive.google.com/uc?export=download&id=1utH8DHIB0RWeoPvYbF2JMu_QSNuXZPLX"
+        preload="auto"
+        loop
+      />
 
       {/* Animated colour stripes */}
       {STRIPES.map((s, i) => (
@@ -310,7 +309,7 @@ function SplashScreen({
             animationDelay: "0.8s",
           }}
         >
-          Madmen — Alma · включится автоматически
+          Scrubb — Everything · включится при открытии
         </p>
       </div>
     </div>
