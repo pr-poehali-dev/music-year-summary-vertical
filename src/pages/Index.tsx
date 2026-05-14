@@ -336,6 +336,223 @@ function SplashScreen({
   );
 }
 
+function MemoriesScreen({ onNext }: { onNext: () => void }) {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.volume = 0.85;
+    audio.play().then(() => setPlaying(true)).catch(() => {});
+    const tryPlay = () => {
+      audio.volume = 0.85;
+      audio.play().then(() => setPlaying(true)).catch(() => {});
+    };
+    document.addEventListener("click", tryPlay, { once: true });
+    return () => document.removeEventListener("click", tryPlay);
+  }, []);
+
+  // Салюты на canvas
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const onResize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    window.addEventListener("resize", onResize);
+
+    type Particle = {
+      x: number; y: number;
+      vx: number; vy: number;
+      alpha: number; color: string; size: number;
+    };
+
+    const particles: Particle[] = [];
+    const colors = ["#1db954","#f4a261","#e63946","#457b9d","#fff","#f9c74f","#ff006e","#8338ec"];
+
+    const burst = (x: number, y: number) => {
+      for (let i = 0; i < 60; i++) {
+        const angle = (Math.PI * 2 * i) / 60;
+        const speed = 2 + Math.random() * 5;
+        particles.push({
+          x, y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 2,
+          alpha: 1,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          size: 2 + Math.random() * 3,
+        });
+      }
+    };
+
+    // Автоматические салюты
+    const autoBurst = () => {
+      burst(
+        100 + Math.random() * (window.innerWidth - 200),
+        80 + Math.random() * (window.innerHeight * 0.5),
+      );
+    };
+    autoBurst();
+    const autoInterval = setInterval(autoBurst, 1200);
+
+    let animId: number;
+    const animate = () => {
+      ctx.fillStyle = "rgba(10,10,10,0.18)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.08;
+        p.alpha -= 0.016;
+        if (p.alpha <= 0) { particles.splice(i, 1); continue; }
+        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+      animId = requestAnimationFrame(animate);
+    };
+    animate();
+
+    return () => {
+      clearInterval(autoInterval);
+      cancelAnimationFrame(animId);
+      window.removeEventListener("resize", onResize);
+    };
+  }, []);
+
+  const handleNext = () => {
+    const audio = audioRef.current;
+    if (!audio || audio.paused) { onNext(); return; }
+    let vol = audio.volume;
+    const step = vol / 20;
+    const fade = setInterval(() => {
+      vol = Math.max(0, vol - step);
+      audio.volume = vol;
+      if (vol <= 0) { audio.pause(); clearInterval(fade); }
+    }, 40);
+    onNext();
+  };
+
+  const MEMORIES = [
+    "булочки с сосисками 🌭",
+    "Хэллоуин 🎃",
+    "фильм с Адамом Сэндлером 🎬",
+    "болтали и смеялись до упаду 😂",
+    "фанфики вслух в Китае 🇨🇳",
+  ];
+
+  return (
+    <div
+      onClick={() => {
+        if (!playing && audioRef.current) {
+          audioRef.current.volume = 0.85;
+          audioRef.current.play().then(() => setPlaying(true)).catch(() => {});
+        }
+      }}
+      style={{
+        position: "fixed", inset: 0, zIndex: 98,
+        background: "#0a0a0a",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontFamily: "'Golos Text', sans-serif",
+        overflow: "hidden",
+      }}
+    >
+      <audio ref={audioRef} src="https://files.catbox.moe/re1vms.mp3" preload="auto" loop />
+      <canvas ref={canvasRef} style={{ position: "absolute", inset: 0, pointerEvents: "none" }} />
+
+      <div style={{ position: "relative", zIndex: 10, textAlign: "center", padding: "0 32px", maxWidth: "580px" }}>
+        <p className="splash-text-in" style={{
+          animationDelay: "0s",
+          fontSize: "11px", fontWeight: 600, letterSpacing: "4px",
+          textTransform: "uppercase", color: "#1db954", marginBottom: "16px",
+        }}>
+          Моменты с тобой
+        </p>
+
+        <h2 className="splash-text-in" style={{
+          animationDelay: "0.15s",
+          fontSize: "clamp(28px, 6vw, 48px)", fontWeight: 800,
+          color: "#fff", lineHeight: 1.15, marginBottom: "32px",
+        }}>
+          Момент с тобой ✨
+        </h2>
+
+        <div className="splash-text-in" style={{ animationDelay: "0.28s", marginBottom: "32px" }}>
+          <p style={{ fontSize: "17px", color: "rgba(255,255,255,0.6)", lineHeight: 1.8, marginBottom: "24px" }}>
+            Помнишь как мы...
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {MEMORIES.map((m, i) => (
+              <div key={i} className="splash-text-in" style={{
+                animationDelay: `${0.35 + i * 0.1}s`,
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: "12px",
+                padding: "12px 20px",
+                fontSize: "15px",
+                color: "rgba(255,255,255,0.85)",
+              }}>
+                {m}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <p className="splash-text-in" style={{
+          animationDelay: "0.9s",
+          fontSize: "18px", fontWeight: 600,
+          color: "#fff", marginBottom: "40px",
+          lineHeight: 1.6,
+        }}>
+          Спасибо тебе за эти моменты 🥹
+        </p>
+
+        <div className="splash-text-in" style={{ animationDelay: "1s" }}>
+          <button
+            onClick={(e) => { e.stopPropagation(); handleNext(); }}
+            style={{
+              background: "transparent",
+              color: "#fff",
+              border: "2px solid rgba(255,255,255,0.3)",
+              borderRadius: "100px",
+              padding: "16px 48px",
+              fontSize: "15px", fontWeight: 600,
+              cursor: "pointer",
+              letterSpacing: "0.5px",
+              fontFamily: "'Golos Text', sans-serif",
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "#1db954";
+              (e.currentTarget as HTMLButtonElement).style.color = "#1db954";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(255,255,255,0.3)";
+              (e.currentTarget as HTMLButtonElement).style.color = "#fff";
+            }}
+          >
+            Что там дальше? →
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function TrackStoryScreen({ onNext }: { onNext: () => void }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
@@ -485,6 +702,7 @@ export default function Index() {
   const [showSplash, setShowSplash] = useState(true);
   const [splashOut, setSplashOut] = useState(false);
   const [showStory, setShowStory] = useState(false);
+  const [showMemories, setShowMemories] = useState(false);
   const [section, setSection] = useState<"home" | "tracks" | "stats">("home");
   const [currentTrack, setCurrentTrack] = useState(TRACKS[0]);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -500,6 +718,11 @@ export default function Index() {
 
   const handleStoryNext = () => {
     setShowStory(false);
+    setShowMemories(true);
+  };
+
+  const handleMemoriesNext = () => {
+    setShowMemories(false);
   };
 
   useEffect(() => {
@@ -568,6 +791,10 @@ export default function Index() {
 
   if (showStory) {
     return <TrackStoryScreen onNext={handleStoryNext} />;
+  }
+
+  if (showMemories) {
+    return <MemoriesScreen onNext={handleMemoriesNext} />;
   }
 
   return (
