@@ -122,18 +122,20 @@ function SplashScreen({
     if (!audio || audioReady) return;
     audio.currentTime = CHORUS_START;
     audio.volume = 0.85;
-    audio.play().then(() => setAudioReady(true)).catch(() => {});
+    audio.play()
+      .then(() => setAudioReady(true))
+      .catch(() => {});
   };
 
   const fadeAndEnter = () => {
     const audio = audioRef.current;
     if (!audio || audio.paused) { onEnter(); return; }
-    const step = audio.volume / 20;
+    let vol = audio.volume;
+    const step = vol / 20;
     const fade = setInterval(() => {
-      if (audio.volume > step) {
-        audio.volume = Math.max(0, audio.volume - step);
-      } else {
-        audio.volume = 0;
+      vol = Math.max(0, vol - step);
+      audio.volume = vol;
+      if (vol <= 0) {
         audio.pause();
         clearInterval(fade);
       }
@@ -158,13 +160,23 @@ function SplashScreen({
         cursor: "default",
       }}
     >
-      {/* Hidden audio */}
+      {/* Hidden audio — пробуем несколько источников */}
       <audio
         ref={audioRef}
-        src="https://drive.google.com/uc?export=download&id=1utH8DHIB0RWeoPvYbF2JMu_QSNuXZPLX"
         preload="auto"
         loop
-      />
+        onError={() => {
+          if (!audioRef.current) return;
+          const cur = audioRef.current.src;
+          if (cur.includes("drive.google")) {
+            audioRef.current.src = "https://docs.google.com/uc?export=download&id=1utH8DHIB0RWeoPvYbF2JMu_QSNuXZPLX";
+            audioRef.current.load();
+          }
+        }}
+      >
+        <source src="https://drive.google.com/uc?export=download&id=1utH8DHIB0RWeoPvYbF2JMu_QSNuXZPLX&confirm=t" type="audio/mpeg" />
+        <source src="https://drive.usercontent.google.com/download?id=1utH8DHIB0RWeoPvYbF2JMu_QSNuXZPLX&export=download&confirm=t" type="audio/mpeg" />
+      </audio>
 
       {/* Animated colour stripes */}
       {STRIPES.map((s, i) => (
