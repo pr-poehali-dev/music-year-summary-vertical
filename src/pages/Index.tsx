@@ -115,22 +115,20 @@ function SplashScreen({
   exiting: boolean;
 }) {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const [audioReady, setAudioReady] = useState(false);
 
-  // Запускаем как только страница загрузилась
-  useEffect(() => {
+  const startAudio = () => {
     const audio = audioRef.current;
-    if (!audio) return;
+    if (!audio || audioReady) return;
     audio.currentTime = CHORUS_START;
     audio.volume = 0.85;
-    audio.play().catch(() => {});
-  }, []);
+    audio.play().then(() => setAudioReady(true)).catch(() => {});
+  };
 
-  const handleClick = () => {
+  const fadeAndEnter = () => {
     const audio = audioRef.current;
-    if (!audio) { onEnter(); return; }
-    // Плавно затихаем за 800мс
-    const startVol = audio.volume;
-    const step = startVol / 20;
+    if (!audio || audio.paused) { onEnter(); return; }
+    const step = audio.volume / 20;
     const fade = setInterval(() => {
       if (audio.volume > step) {
         audio.volume = Math.max(0, audio.volume - step);
@@ -146,6 +144,7 @@ function SplashScreen({
   return (
     <div
       className={exiting ? "splash-exit" : ""}
+      onClick={startAudio}
       style={{
         position: "fixed",
         inset: 0,
@@ -156,6 +155,7 @@ function SplashScreen({
         overflow: "hidden",
         fontFamily: "'Golos Text', sans-serif",
         zIndex: 100,
+        cursor: "default",
       }}
     >
       {/* Hidden audio */}
@@ -289,7 +289,7 @@ function SplashScreen({
         {/* CTA button */}
         <div className="splash-text-in" style={{ animationDelay: "0.6s" }}>
           <button
-            onClick={handleClick}
+            onClick={(e) => { e.stopPropagation(); fadeAndEnter(); }}
             className="btn-breathe"
             style={{
               background: "#1db954",
@@ -327,7 +327,7 @@ function SplashScreen({
             animationDelay: "0.8s",
           }}
         >
-          Scrubb — Everything · включится при открытии
+          {audioReady ? "🎵 Scrubb — Everything" : "🔇 Коснись экрана чтобы включить звук"}
         </p>
       </div>
     </div>
